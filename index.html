@@ -210,6 +210,15 @@
     margin-top:8px;
     font-size:13px;
   }
+  table td{
+    overflow:hidden;
+  }
+  table td input, table td select{
+    width:100%;
+    box-sizing:border-box;
+    font-size:13px;
+    padding:3px 4px;
+  }
   .table-wrap{
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
@@ -850,13 +859,13 @@
     <thead>
       <tr>
         <th style="width:9%;">Date</th>
-        <th style="width:17%;">Business / Trip Purpose</th>
+        <th style="width:16%;">Business / Trip Purpose</th>
         <th style="width:20%;">Start Location</th>
         <th style="width:20%;">End Location</th>
-        <th style="width:5%;">Distance (KM)</th>
-        <th style="width:15%;">Remarks</th>
-        <th class="no-print" style="width:8%;">Receipt</th>
-        <th class="no-print" style="width:6%;"></th>
+        <th style="width:7%;">Distance (KM)</th>
+        <th style="width:18%;">Remarks</th>
+        <th class="no-print" style="width:6%;">📎</th>
+        <th class="no-print" style="width:4%;"></th>
       </tr>
     </thead>
     <tbody id="tableBody">
