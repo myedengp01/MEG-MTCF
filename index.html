@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEG-MTCF v2026.08.05-00:30</title>
+<title>MEG-MTCF v2026.08.05-15:00</title>
 <style>
   :root{
     --pink:#f7b8cc;
@@ -205,6 +205,7 @@
   }
   table{
     width:100%;
+    table-layout:fixed;
     border-collapse:collapse;
     margin-top:8px;
     font-size:13px;
@@ -439,6 +440,113 @@
   .review-table td.remarks-col{text-align:left;}
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:3000;}
   .modal-box{background:#fff;border-radius:10px;padding:20px;width:520px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;}
+  .receipt-cell{text-align:center;}
+  .receipt-btn{
+    border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;
+    cursor:pointer;font-size:12px;color:var(--navy);
+  }
+  .receipt-btn.has-receipts{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .receipt-thumbs{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;}
+  .receipt-thumb{position:relative;width:100px;}
+  .receipt-thumb img{width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid var(--line);display:block;}
+  .receipt-thumb .del-btn{
+    position:absolute;top:-6px;right:-6px;background:#c0392b;color:#fff;border:none;
+    border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:1;
+  }
+  .receipt-add-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+  .receipt-add-row input{flex:1;}
+  .receipt-source-btn{
+    flex:1;padding:10px;border:1px solid var(--navy);border-radius:7px;background:#fff;
+    color:var(--navy);font-size:13.5px;font-weight:600;cursor:pointer;
+  }
+  .receipt-source-btn:hover{background:var(--navy);color:#fff;}
+  .receipt-source-btn.primary{background:var(--navy);color:#fff;}
+  .crop-modal-box{
+    width:min(94vw, 480px);max-height:92vh;max-height:92dvh;
+    display:flex;flex-direction:column;padding:16px;overflow:hidden;
+  }
+  .crop-modal-title{margin:0 0 10px;flex:none;}
+  .crop-stage-wrap{text-align:center;flex:1 1 auto;min-height:0;overflow:auto;}
+  .crop-stage{
+    position:relative;display:inline-block;max-width:100%;
+    background:#111;border-radius:8px;touch-action:none;user-select:none;
+    line-height:0;
+  }
+  .crop-stage img{display:block;max-width:100%;max-height:42vh;max-height:42dvh;pointer-events:none;}
+  .crop-modal-footer{flex:none;}
+  .crop-box{
+    position:absolute;border:2px solid #fff;box-shadow:0 0 0 2000px rgba(0,0,0,.5);
+    cursor:move;touch-action:none;
+  }
+  .crop-handle{
+    position:absolute;width:20px;height:20px;background:#fff;border:2px solid var(--navy);
+    border-radius:50%;touch-action:none;
+  }
+  .crop-handle[data-h="nw"]{top:-10px;left:-10px;cursor:nwse-resize;}
+  .crop-handle[data-h="ne"]{top:-10px;right:-10px;cursor:nesw-resize;}
+  .crop-handle[data-h="sw"]{bottom:-10px;left:-10px;cursor:nesw-resize;}
+  .crop-handle[data-h="se"]{bottom:-10px;right:-10px;cursor:nwse-resize;}
+  .crop-hint{font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px;}
+  .enhance-toggle{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:12px;cursor:pointer;}
+  .crop-actions{display:flex;gap:8px;margin-top:14px;}
+  .receipt-status{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;}
+  .viewer-filters{
+    background:#f4f6f9;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    display:flex;
+    gap:18px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .viewer-filters .field{
+    flex:none;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:3px;
+  }
+  .viewer-filters .field label{
+    font-size:11px;
+    color:var(--muted);
+    min-width:0;
+  }
+  .viewer-filters .field select, .viewer-filters .field input{
+    padding:5px 8px;
+    font-size:13px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:#fff;
+    min-width:140px;
+  }
+  .viewer-claim-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:8px;
+    background:#fff;
+  }
+  .viewer-claim-info{font-size:13px;}
+  .viewer-claim-info .name{font-weight:700;color:var(--navy);}
+  .viewer-claim-info .meta{color:var(--muted);font-size:12px;}
+  .viewer-claim-actions{display:flex;gap:8px;}
+  .viewer-claim-actions a, .viewer-claim-actions span{
+    padding:6px 14px;
+    border-radius:6px;
+    border:1px solid var(--navy);
+    background:#fff;
+    color:var(--navy);
+    font-weight:600;
+    font-size:12.5px;
+    cursor:pointer;
+    text-decoration:none;
+  }
   .modal-box h3{margin:0;color:var(--navy);}
   .modal-close{cursor:pointer;font-weight:700;color:#6b7280;font-size:18px;line-height:1;}
   .manage-tab-btn{padding:6px 14px;border:1px solid var(--navy);border-radius:6px;background:#fff;color:var(--navy);font-size:12px;font-weight:600;cursor:pointer;}
@@ -528,7 +636,7 @@
   <div class="auth-box" id="authBoxLogin">
     <h2>MEG-FORMS Login</h2>
     <div class="auth-sub">Sign in to access the Mileage Tracking &amp; Claim Form (MTCF)</div>
-    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.08.05-00:30</div>
+    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.08.05-15:00</div>
     <div class="auth-error" id="loginError"></div>
     <input type="email" id="loginEmail" placeholder="Email">
     <div class="pw-wrap">
@@ -593,6 +701,7 @@
   <button class="btn-submit" onclick="submitClaim()">✅ Submit Claim</button>
   <button onclick="notYetWired('Backup to Drive')">⬆️ Backup to Drive</button>
   <button id="btnManageLists" onclick="openManageModal()" style="display:none">📋 Manage Lists</button>
+  <button id="btnViewerScreen" onclick="openViewerScreenFromToolbar()" style="display:none">📋 Approved Claims</button>
   <button class="btn-print" id="printBtn">🖨️ Print / Save PDF</button>
   <button class="btn-share" id="shareBtn">📤 Share to WhatsApp</button>
 </div>
@@ -619,6 +728,50 @@
     <div id="approvalReviewFooterButtons" style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex:none;">
       <button onclick="closeApprovalReviewModal()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;">Close</button>
       <button class="approve-btn" id="approvalReviewApproveBtn" style="padding:8px 16px;font-size:13px;">✅ Approve This Claim</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal-box" style="width:420px;">
+    <span class="modal-close" onclick="closeReceiptPanel()">✕</span>
+    <h3 id="receiptModalTitle">Receipts</h3>
+    <div class="receipt-thumbs" id="receiptThumbs"></div>
+    <div class="receipt-add-row">
+      <button type="button" class="receipt-source-btn" onclick="document.getElementById('receiptCameraInput').click()">📷 Camera</button>
+      <button type="button" class="receipt-source-btn" onclick="document.getElementById('receiptGalleryInput').click()">🖼️ Gallery</button>
+      <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" style="display:none;">
+      <input type="file" id="receiptGalleryInput" accept="image/*" style="display:none;">
+    </div>
+    <div class="receipt-status" id="receiptStatus"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receiptEditModal">
+  <div class="modal-box crop-modal-box">
+    <span class="modal-close" onclick="cancelReceiptEdit()">✕</span>
+    <h3 class="crop-modal-title">Adjust Photo</h3>
+    <div class="crop-stage-wrap">
+      <div class="crop-stage" id="cropStage">
+        <img id="cropImage" draggable="false" alt="Journey proof to crop">
+        <div class="crop-box" id="cropBox">
+          <div class="crop-handle" data-h="nw"></div>
+          <div class="crop-handle" data-h="ne"></div>
+          <div class="crop-handle" data-h="sw"></div>
+          <div class="crop-handle" data-h="se"></div>
+        </div>
+      </div>
+    </div>
+    <div class="crop-modal-footer">
+      <div class="crop-hint">Drag the corners to crop, or drag inside the box to move it.</div>
+      <label class="enhance-toggle">
+        <input type="checkbox" id="enhanceToggle" checked>
+        ✨ Enhance (boost contrast, like a document scan)
+      </label>
+      <div class="crop-actions">
+        <button type="button" class="receipt-source-btn" onclick="cancelReceiptEdit()">Cancel</button>
+        <button type="button" class="receipt-source-btn primary" id="usePhotoBtn">Use Photo</button>
+      </div>
     </div>
   </div>
 </div>
@@ -695,13 +848,14 @@
   <table>
     <thead>
       <tr>
-        <th>Date</th>
-        <th>Business / Trip Purpose</th>
-        <th>Start Location</th>
-        <th>End Location</th>
-        <th>Distance (KM)</th>
-        <th>Remarks</th>
-        <th class="no-print"></th>
+        <th style="width:9%;">Date</th>
+        <th style="width:17%;">Business / Trip Purpose</th>
+        <th style="width:20%;">Start Location</th>
+        <th style="width:20%;">End Location</th>
+        <th style="width:5%;">Distance (KM)</th>
+        <th style="width:15%;">Remarks</th>
+        <th class="no-print" style="width:8%;">Receipt</th>
+        <th class="no-print" style="width:6%;"></th>
       </tr>
     </thead>
     <tbody id="tableBody">
@@ -712,11 +866,13 @@
         <td id="totalMileage">0.00</td>
         <td></td>
         <td class="no-print"></td>
+        <td class="no-print"></td>
       </tr>
       <tr>
         <td colspan="4">Total Amount (MYR) :</td>
         <td id="totalAmount">0.00</td>
         <td></td>
+        <td class="no-print"></td>
         <td class="no-print"></td>
       </tr>
     </tfoot>
@@ -736,6 +892,34 @@
   </div>
 </div>
 
+<div class="sheet" id="viewerScreen" style="display:none;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px;">
+    <h2 style="margin:0;color:var(--navy);">📋 Approved Mileage Claims</h2>
+  </div>
+  <div class="viewer-filters no-print">
+    <div class="field">
+      <label for="viewerCompany">Company</label>
+      <select id="viewerCompany" onchange="renderViewerClaims()">
+        <option value="">All companies</option>
+        <option value="MEG">MyEden Group</option>
+        <option value="HDS">Happy Dino Science Camp</option>
+        <option value="ABN">Aborne Project</option>
+        <option value="MEH">MyEden Edu Hub</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="viewerClaimant">Claimant Name</label>
+      <input type="text" id="viewerClaimant" placeholder="Search by name" oninput="renderViewerClaims()">
+    </div>
+    <div class="field">
+      <label for="viewerYear">Year</label>
+      <input type="number" id="viewerYear" min="2000" max="2100" onchange="renderViewerClaims()">
+    </div>
+    <button onclick="clearViewerFilters()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12.5px;">Clear filters</button>
+  </div>
+  <div id="viewerClaimsList" style="margin-top:14px;"></div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -753,6 +937,7 @@ function addTripRow(data){
   const tbody = document.getElementById("tableBody");
   const tr = document.createElement("tr");
   tr.dataset.rid = tripRowCounter;
+  tr.dataset.receipts = JSON.stringify((data && data.receipts) || []);
 
   const tdDate = document.createElement("td");
   const dateInput = document.createElement("input");
@@ -805,6 +990,16 @@ function addTripRow(data){
   tdRemarks.appendChild(remarksInput);
   tr.appendChild(tdRemarks);
 
+  const tdReceipt = document.createElement("td");
+  tdReceipt.className = "no-print receipt-cell";
+  const receiptBtn = document.createElement("button");
+  receiptBtn.type = "button";
+  receiptBtn.className = "receipt-btn";
+  receiptBtn.innerHTML = '📎 <span class="receipt-count"></span>';
+  receiptBtn.addEventListener("click", ()=>openReceiptPanel(tr));
+  tdReceipt.appendChild(receiptBtn);
+  tr.appendChild(tdReceipt);
+
   const tdRemove = document.createElement("td");
   tdRemove.className = "no-print";
   const removeBtn = document.createElement("button");
@@ -819,6 +1014,7 @@ function addTripRow(data){
   tr.appendChild(tdRemove);
 
   tbody.appendChild(tr);
+  updateReceiptButton(tr);
   updateTripTotals();
 }
 
@@ -840,6 +1036,230 @@ function updateTripTotals(){
 }
 
 document.getElementById("addTripBtn").addEventListener("click", ()=>addTripRow());
+
+/* ---------- Journey proof photo attachments (per trip) ---------- */
+let currentReceiptRow = null;
+
+function updateReceiptButton(tr){
+  const receipts = JSON.parse(tr.dataset.receipts || '[]');
+  const btn = tr.querySelector('.receipt-btn');
+  const countEl = tr.querySelector('.receipt-count');
+  countEl.textContent = receipts.length > 0 ? receipts.length : '';
+  btn.classList.toggle('has-receipts', receipts.length > 0);
+}
+
+// A new claim has no submission id until first saved — photos need a stable
+// folder to upload into, so silently save a draft first if one doesn't exist
+// yet, without the disruption of a full "submit" action mid-attach-a-photo flow.
+async function ensureDraftSaved(){
+  if(currentDraftId) return currentDraftId;
+  if(!currentUser){ alert('Please sign in first.'); return null; }
+  const payload = collectMtcfPayload('draft');
+  const result = await sb.from('mtcf_submissions').insert(payload).select().single();
+  if(result.error){ alert('Failed to prepare draft for photo upload: ' + result.error.message); return null; }
+  currentDraftId = result.data.id;
+  return currentDraftId;
+}
+
+function openReceiptPanel(tr){
+  currentReceiptRow = tr;
+  const purpose = tr.querySelector('.trip-purpose')?.value || '';
+  document.getElementById('receiptModalTitle').textContent = purpose ? `Journey Proof — ${purpose}` : 'Journey Proof';
+  document.getElementById('receiptStatus').textContent = '';
+  renderReceiptThumbs();
+  document.getElementById('receiptModal').style.display = 'flex';
+}
+function closeReceiptPanel(){
+  document.getElementById('receiptModal').style.display = 'none';
+  currentReceiptRow = null;
+}
+
+// Only the stable Storage path is ever persisted in the claim data — a signed
+// URL is time-limited and would go dead if baked into a submission that gets
+// reviewed weeks later. Fresh signed URLs are always fetched here, on demand,
+// whenever thumbnails actually need to be displayed.
+async function renderReceiptThumbs(){
+  const thumbsEl = document.getElementById('receiptThumbs');
+  const receipts = JSON.parse(currentReceiptRow.dataset.receipts || '[]');
+  if(receipts.length === 0){ thumbsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">No photos attached yet.</div>'; return; }
+  thumbsEl.innerHTML = receipts.map(() => `<div style="color:var(--muted);font-size:12px;">Loading…</div>`).join('');
+  const withUrls = await Promise.all(receipts.map(async r => {
+    const { data } = await sb.storage.from('mtcf-receipts').createSignedUrl(r.path, 300); // 5 min, just for this preview
+    return { ...r, signedUrl: data?.signedUrl || '' };
+  }));
+  thumbsEl.innerHTML = withUrls.map((r, idx) => `
+    <div class="receipt-thumb">
+      <img src="${r.signedUrl}" alt="Journey proof">
+      <button type="button" class="del-btn" onclick="deleteReceipt(${idx})">✕</button>
+    </div>`).join('');
+}
+
+/* ---------- Crop + Enhance editor (shown between photo selection and upload) ---------- */
+let cropFile = null;
+let cropRect = { x: 8, y: 8, w: 84, h: 84 }; // percentages of the displayed image
+let cropDragMode = null;   // null | 'move' | 'nw' | 'ne' | 'sw' | 'se'
+let cropDragStart = null;
+
+function clampNum(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+function openCropEditor(file){
+  cropFile = file;
+  const imgEl = document.getElementById('cropImage');
+  const url = URL.createObjectURL(file);
+  imgEl.onload = () => {
+    cropRect = { x: 8, y: 8, w: 84, h: 84 };
+    positionCropBox();
+  };
+  imgEl.src = url;
+  document.getElementById('enhanceToggle').checked = true;
+  document.getElementById('receiptEditModal').style.display = 'flex';
+}
+function cancelReceiptEdit(){
+  document.getElementById('receiptEditModal').style.display = 'none';
+  cropFile = null;
+}
+function positionCropBox(){
+  const boxEl = document.getElementById('cropBox');
+  boxEl.style.left = cropRect.x + '%';
+  boxEl.style.top = cropRect.y + '%';
+  boxEl.style.width = cropRect.w + '%';
+  boxEl.style.height = cropRect.h + '%';
+}
+function stagePercentFromEvent(e){
+  const rect = document.getElementById('cropStage').getBoundingClientRect();
+  return {
+    x: clampNum(((e.clientX - rect.left) / rect.width) * 100, 0, 100),
+    y: clampNum(((e.clientY - rect.top) / rect.height) * 100, 0, 100)
+  };
+}
+function onCropPointerDown(e, mode){
+  cropDragMode = mode;
+  const p = stagePercentFromEvent(e);
+  cropDragStart = { px: p.x, py: p.y, rect: { ...cropRect } };
+  e.preventDefault();
+}
+function onCropPointerMove(e){
+  if(!cropDragMode) return;
+  const p = stagePercentFromEvent(e);
+  const dx = p.x - cropDragStart.px, dy = p.y - cropDragStart.py;
+  const r0 = cropDragStart.rect;
+  let r = { ...r0 };
+  if(cropDragMode === 'move'){
+    r.x = clampNum(r0.x + dx, 0, 100 - r0.w);
+    r.y = clampNum(r0.y + dy, 0, 100 - r0.h);
+  } else {
+    if(cropDragMode.includes('w')){ const right = r0.x + r0.w; r.x = clampNum(r0.x + dx, 0, right - 5); r.w = right - r.x; }
+    if(cropDragMode.includes('e')){ r.w = clampNum(r0.w + dx, 5, 100 - r0.x); }
+    if(cropDragMode.includes('n')){ const bottom = r0.y + r0.h; r.y = clampNum(r0.y + dy, 0, bottom - 5); r.h = bottom - r.y; }
+    if(cropDragMode.includes('s')){ r.h = clampNum(r0.h + dy, 5, 100 - r0.y); }
+  }
+  cropRect = r;
+  positionCropBox();
+}
+function onCropPointerUp(){ cropDragMode = null; cropDragStart = null; }
+
+document.getElementById('cropBox').addEventListener('pointerdown', e=>{
+  if(e.target.classList.contains('crop-handle')) return;
+  onCropPointerDown(e, 'move');
+});
+document.querySelectorAll('.crop-handle').forEach(h=>{
+  h.addEventListener('pointerdown', e => onCropPointerDown(e, h.dataset.h));
+});
+document.addEventListener('pointermove', onCropPointerMove);
+document.addEventListener('pointerup', onCropPointerUp);
+
+// Crops to the selected rectangle (mapped to the image's natural pixel size),
+// optionally boosts contrast/brightness for a "document scan" look, and caps
+// the output resolution — all in one canvas pass.
+function cropAndEnhanceToBlob(){
+  return new Promise((resolve, reject) => {
+    const imgEl = document.getElementById('cropImage');
+    const nw = imgEl.naturalWidth, nh = imgEl.naturalHeight;
+    const sx = (cropRect.x / 100) * nw, sy = (cropRect.y / 100) * nh;
+    const sw = (cropRect.w / 100) * nw, sh = (cropRect.h / 100) * nh;
+
+    const maxDim = 1600;
+    let outW = sw, outH = sh;
+    if(outW > maxDim || outH > maxDim){
+      const scale = maxDim / Math.max(outW, outH);
+      outW = Math.round(outW * scale);
+      outH = Math.round(outH * scale);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    if(document.getElementById('enhanceToggle').checked){
+      ctx.filter = 'contrast(135%) brightness(112%) saturate(40%)';
+    }
+    ctx.drawImage(imgEl, sx, sy, sw, sh, 0, 0, outW, outH);
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Failed to process image')), 'image/jpeg', 0.85);
+  });
+}
+
+function handleReceiptFileChosen(e){
+  const file = e.target.files[0];
+  e.target.value = ''; // reset so choosing the same file again still fires 'change'
+  if(!file || !currentReceiptRow) return;
+  openCropEditor(file);
+}
+document.getElementById('receiptCameraInput').addEventListener('change', handleReceiptFileChosen);
+document.getElementById('receiptGalleryInput').addEventListener('change', handleReceiptFileChosen);
+
+document.getElementById('usePhotoBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('usePhotoBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+  try{
+    const blob = await cropAndEnhanceToBlob();
+    document.getElementById('receiptEditModal').style.display = 'none';
+    await uploadReceiptBlob(blob);
+  }catch(err){
+    console.error(err);
+    alert('Failed to process the photo: ' + err.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Use Photo';
+  }
+});
+
+async function uploadReceiptBlob(blob){
+  const statusEl = document.getElementById('receiptStatus');
+  const tr = currentReceiptRow;
+  statusEl.textContent = 'Preparing…';
+  try{
+    const draftId = await ensureDraftSaved();
+    if(!draftId) return;
+    const path = `${draftId}/${tr.dataset.rid}/${Date.now()}.jpg`;
+    statusEl.textContent = 'Uploading…';
+    const { error: upErr } = await sb.storage.from('mtcf-receipts').upload(path, blob, { contentType: 'image/jpeg' });
+    if(upErr){ statusEl.textContent = 'Upload failed: ' + upErr.message; return; }
+    const receipts = JSON.parse(tr.dataset.receipts || '[]');
+    receipts.push({ path });
+    tr.dataset.receipts = JSON.stringify(receipts);
+    updateReceiptButton(tr);
+    await renderReceiptThumbs();
+    statusEl.textContent = 'Attached.';
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'Something went wrong: ' + err.message;
+  }
+}
+
+async function deleteReceipt(idx){
+  if(!currentReceiptRow) return;
+  if(!confirm('Remove this journey proof photo?')) return;
+  const tr = currentReceiptRow;
+  const receipts = JSON.parse(tr.dataset.receipts || '[]');
+  const [removed] = receipts.splice(idx, 1);
+  tr.dataset.receipts = JSON.stringify(receipts);
+  updateReceiptButton(tr);
+  renderReceiptThumbs();
+  if(removed?.path){
+    const { error } = await sb.storage.from('mtcf-receipts').remove([removed.path]);
+    if(error) console.error('Failed to delete photo from storage (non-fatal):', error);
+  }
+}
 
 
 // ---------- Company / Logo (matches MEG-SCF) ----------
@@ -1004,7 +1424,7 @@ async function onAuthReady(){
     .eq('user_id', user.id).eq('form_code', FORM_CODE).maybeSingle();
   currentPerm = perm || null;
 
-  if(!currentPerm || (!currentPerm.can_submit && !currentPerm.can_approve && !currentPerm.is_admin)){
+  if(!currentPerm || (!currentPerm.can_submit && !currentPerm.can_approve && !currentPerm.is_admin && !currentPerm.can_view)){
     showAuthBox('pending');
     return;
   }
@@ -1012,7 +1432,16 @@ async function onAuthReady(){
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('topUserBar').style.display = 'flex';
   document.getElementById('topUserLabel').textContent =
-    `Signed in as ${currentProfile?.full_name || currentUser.email}${currentPerm.is_admin ? ' (Admin)' : (currentPerm.can_approve ? ' (Approver)' : '')}`;
+    `Signed in as ${currentProfile?.full_name || currentUser.email}${currentPerm.is_admin ? ' (Admin)' : (currentPerm.can_approve ? ' (Approver)' : (currentPerm.can_view && !currentPerm.can_submit ? ' (Viewer)' : ''))}`;
+
+  // Viewer-only (no submit rights): show the read-only approved-claims screen
+  // instead of the submission form, and stop here.
+  if(currentPerm.can_view && !currentPerm.can_submit){
+    document.getElementById('mainFormSheet').style.display = 'none';
+    document.getElementById('viewerScreen').style.display = 'block';
+    await initViewerScreen();
+    return;
+  }
 
   // Auto-fill Claimant's Name with the signed-in user's name, still editable
   const claimantNameInput = document.getElementById('claimantName');
@@ -1031,6 +1460,64 @@ async function onAuthReady(){
   if(currentPerm.is_admin){
     document.getElementById('btnManageLists').style.display = 'inline-block';
   }
+
+  // Someone who can both submit AND view (e.g. an approver also doing payroll)
+  // gets a button to jump into the read-only approved-claims screen on demand.
+  if(currentPerm.can_view){
+    document.getElementById('btnViewerScreen').style.display = 'inline-block';
+  }
+}
+
+/* ---------- Viewer (payroll) screen: read-only, approved claims only ---------- */
+async function initViewerScreen(){
+  await renderViewerClaims();
+}
+function openViewerScreenFromToolbar(){
+  document.getElementById('mainFormSheet').style.display = 'none';
+  document.getElementById('viewerScreen').style.display = 'block';
+  initViewerScreen();
+}
+function clearViewerFilters(){
+  document.getElementById('viewerCompany').value = '';
+  document.getElementById('viewerClaimant').value = '';
+  document.getElementById('viewerYear').value = '';
+  renderViewerClaims();
+}
+async function renderViewerClaims(){
+  const listEl = document.getElementById('viewerClaimsList');
+  listEl.innerHTML = '<div class="manage-empty">Loading claims...</div>';
+
+  let query = sb.from('mtcf_submissions')
+    .select('id, serial_no, claimant_name, company_code, year, start_date, end_date, total_mileage_km, total_amount, approved_at, approved_by_name, pdf_url')
+    .eq('status', 'approved');
+
+  const company = document.getElementById('viewerCompany').value;
+  const claimant = document.getElementById('viewerClaimant').value.trim();
+  const year = document.getElementById('viewerYear').value;
+  if(company) query = query.eq('company_code', company);
+  if(claimant) query = query.ilike('claimant_name', `%${claimant}%`);
+  if(year) query = query.eq('year', parseInt(year, 10));
+  query = query.order('approved_at', { ascending: false });
+
+  const { data, error } = await query;
+  if(error){ listEl.innerHTML = '<div class="manage-empty">Failed to load claims.</div>'; console.error(error); return; }
+  if(!data || data.length === 0){ listEl.innerHTML = '<div class="manage-empty">No approved claims match these filters.</div>'; return; }
+
+  listEl.innerHTML = data.map(sub=>{
+    const companyName = (Object.values(COMPANIES).find(c => c.code === sub.company_code) || {}).name || sub.company_code || '';
+    const approvedDate = sub.approved_at ? sub.approved_at.slice(0,10).split('-').reverse().join('/') : '';
+    const pdfAction = sub.pdf_url
+      ? `<a href="${escapeHtmlMtcf(sub.pdf_url)}" target="_blank" rel="noopener">📄 View / Download / Print</a>`
+      : `<span style="opacity:.5;cursor:default;">PDF not available</span>`;
+    return `
+      <div class="viewer-claim-row">
+        <div class="viewer-claim-info">
+          <div class="name">${escapeHtmlMtcf(sub.claimant_name)} — ${escapeHtmlMtcf(sub.serial_no)}</div>
+          <div class="meta">${escapeHtmlMtcf(companyName)} · ${sub.year || ''} · ${sub.start_date || ''} – ${sub.end_date || ''} · ${Number(sub.total_mileage_km||0).toFixed(2)} KM · RM ${Number(sub.total_amount||0).toFixed(2)} · Approved by ${escapeHtmlMtcf(sub.approved_by_name)} on ${approvedDate}</div>
+        </div>
+        <div class="viewer-claim-actions">${pdfAction}</div>
+      </div>`;
+  }).join('');
 }
 
 // Pulls the current RM/KM rate for the selected company from mtcf_rates.
@@ -1054,7 +1541,8 @@ function collectMtcfPayload(status){
       start_location: tr.querySelector('.trip-start')?.value || '',
       end_location: tr.querySelector('.trip-end')?.value || '',
       distance_km: parseFloat(tr.querySelector('.trip-distance')?.value) || 0,
-      remarks: tr.querySelector('.trip-remarks')?.value || ''
+      remarks: tr.querySelector('.trip-remarks')?.value || '',
+      receipts: JSON.parse(tr.dataset.receipts || '[]')
     });
   });
   return {
@@ -1182,13 +1670,14 @@ async function renderUsersManageTab(){
     (perms||[]).forEach(p=>{ permMap[p.user_id] = p; });
     if(!profiles || profiles.length===0){ cont.innerHTML = '<div class="manage-empty">No users found.</div>'; return; }
     cont.innerHTML = profiles.map(p=>{
-      const perm = permMap[p.id] || { can_submit:false, can_approve:false, is_admin:false };
+      const perm = permMap[p.id] || { can_submit:false, can_approve:false, is_admin:false, can_view:false };
       return `
         <div class="manage-list-item" style="flex-direction:column;align-items:flex-start;gap:4px;">
           <div style="font-weight:600;">${escapeHtmlMtcf(p.full_name)} <span style="color:var(--muted);font-weight:400;">(${escapeHtmlMtcf(p.status)})</span></div>
           <div style="display:flex;gap:12px;font-size:12px;flex-wrap:wrap;">
             <label><input type="checkbox" ${perm.can_submit?'checked':''} onchange="updateMtcfUserPermission('${p.id}','can_submit',this.checked)"> Can Submit</label>
             <label><input type="checkbox" ${perm.can_approve?'checked':''} onchange="updateMtcfUserPermission('${p.id}','can_approve',this.checked)"> Can Approve</label>
+            <label><input type="checkbox" ${perm.can_view?'checked':''} onchange="updateMtcfUserPermission('${p.id}','can_view',this.checked)"> Can View (Payroll)</label>
             <label><input type="checkbox" ${perm.is_admin?'checked':''} onchange="updateMtcfUserPermission('${p.id}','is_admin',this.checked)"> Admin</label>
           </div>
         </div>`;
@@ -1206,6 +1695,7 @@ async function updateMtcfUserPermission(userId, field, value){
         user_id: userId, form_code: FORM_CODE,
         can_submit: field==='can_submit'?value:false,
         can_approve: field==='can_approve'?value:false,
+        can_view: field==='can_view'?value:false,
         is_admin: field==='is_admin'?value:false
       });
     }
