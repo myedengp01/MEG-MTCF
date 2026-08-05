@@ -490,6 +490,7 @@
   .enhance-toggle{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:12px;cursor:pointer;}
   .crop-actions{display:flex;gap:8px;margin-top:14px;}
   .receipt-status{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;}
+  .footer-stamp{margin-top:18px;font-size:10px;color:var(--muted);text-align:right;}
   .viewer-filters{
     background:#f4f6f9;
     border:1px solid var(--line);
@@ -890,6 +891,7 @@
       <div class="field"><label>Date of Approval</label><input type="text" id="approvedDate" readonly></div>
     </div>
   </div>
+  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.08.05-15:00</div>
 </div>
 
 <div class="sheet" id="viewerScreen" style="display:none;">
@@ -1302,6 +1304,7 @@ function updateSerial(){
   document.getElementById('serialDisplay').textContent = `${c.code}-MTCF-${yyyymm}-${currentSerialSuffix}`;
 }
 onCompanyChange(); // set default logo, serial, and rate on load
+document.getElementById('refStamp').textContent = `Ref: ${document.title}`;
 
 /* ===================== SUPABASE / AUTH / SUBMISSIONS ===================== */
 const SUPABASE_URL = "https://vzngfswtofegimfcoigx.supabase.co";
@@ -1817,8 +1820,6 @@ async function loadApprovedFieldsForPrint(){
     document.getElementById('approvedDate').value = data.approved_at ? data.approved_at.slice(0,10).split('-').reverse().join('/') : '';
   }
 }
-
-onCompanyChange(); // set default logo + serial on load
 
 // ---------- Print / Share to PDF ----------
 function buildFileName(){
