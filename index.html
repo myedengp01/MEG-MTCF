@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEG-MTCF v2026.08.21-17:30</title>
+<title>MEG-MTCF v2026.08.21-18:00</title>
 <style>
   :root{
     --pink:#f7b8cc;
@@ -647,7 +647,7 @@
   <div class="auth-box" id="authBoxLogin">
     <h2>MEG-FORMS Login</h2>
     <div class="auth-sub">Sign in to access the Mileage Tracking &amp; Claim Form (MTCF)</div>
-    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.08.21-17:30</div>
+    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.08.21-18:00</div>
     <div class="auth-error" id="loginError"></div>
     <input type="email" id="loginEmail" placeholder="Email">
     <div class="pw-wrap">
@@ -912,7 +912,7 @@
       <div class="field"><label>Date of Approval</label><input type="text" id="approvedDate" readonly></div>
     </div>
   </div>
-  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.08.21-17:30</div>
+  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.08.21-18:00</div>
 </div>
 
 <div class="sheet" id="viewerScreen" style="display:none;">
@@ -1610,7 +1610,7 @@ async function openLoadDraftModal(){
     .select('*')
     .eq('submitted_by', currentUser.id)
     .eq('status', 'draft')
-    .order('updated_at', { ascending: false });
+    .order('created_at', { ascending: false });
   if(error){ alert('Failed to load drafts: ' + error.message); return; }
   renderDraftPickerList(data || []);
   document.getElementById('loadDraftModal').style.display = 'flex';
@@ -1629,11 +1629,11 @@ function renderDraftPickerList(drafts){
   }
   listEl.innerHTML = drafts.map((d, i) => {
     const tripCount = (d.trips || []).length;
-    const savedAt = d.updated_at ? new Date(d.updated_at).toLocaleString() : '';
+    const savedAt = d.created_at ? new Date(d.created_at).toLocaleString() : '';
     return `
       <div onclick="selectDraftToLoad(${i})" style="cursor:pointer;padding:10px 12px;border:1px solid #dde;border-radius:8px;margin-bottom:8px;">
         <strong>${escapeHtmlMtcf(d.serial_no || '(no serial yet)')}</strong> — ${escapeHtmlMtcf(d.claimant_name || 'Unnamed')}
-        <div style="font-size:12px;color:#667;">${escapeHtmlMtcf(d.company_code || '')} · ${tripCount} trip${tripCount===1?'':'s'} · saved ${savedAt}</div>
+        <div style="font-size:12px;color:#667;">${escapeHtmlMtcf(d.company_code || '')} · ${tripCount} trip${tripCount===1?'':'s'} · started ${savedAt}</div>
       </div>`;
   }).join('');
 }
