@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEG-MTCF v2026.08.21-18:00</title>
+<title>MEG-MTCF v2026.08.21-18:30</title>
 <style>
   :root{
     --pink:#f7b8cc;
@@ -647,7 +647,7 @@
   <div class="auth-box" id="authBoxLogin">
     <h2>MEG-FORMS Login</h2>
     <div class="auth-sub">Sign in to access the Mileage Tracking &amp; Claim Form (MTCF)</div>
-    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.08.21-18:00</div>
+    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.08.21-18:30</div>
     <div class="auth-error" id="loginError"></div>
     <input type="email" id="loginEmail" placeholder="Email">
     <div class="pw-wrap">
@@ -737,8 +737,19 @@
       <button id="approvalReviewSharePdfBtn">📤 Share</button>
     </div>
 
+    <div id="approvalReviewDisapproveSection" style="display:none;margin-top:14px;flex:none;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Reason for disapproval (required)</label>
+      <textarea id="disapprovalReasonInput" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px;" placeholder="Explain why this claim is being disapproved..."></textarea>
+      <div id="disapprovalReasonError" style="color:#c0392b;font-size:12px;min-height:16px;margin-top:4px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+        <button onclick="cancelDisapproval()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;">Cancel</button>
+        <button id="confirmDisapprovalBtn" style="padding:8px 16px;border-radius:6px;border:none;background:#c0392b;color:#fff;cursor:pointer;font-size:13px;">Confirm Disapproval</button>
+      </div>
+    </div>
+
     <div id="approvalReviewFooterButtons" style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex:none;">
       <button onclick="closeApprovalReviewModal()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;">Close</button>
+      <button id="approvalReviewDisapproveBtn" onclick="showDisapprovalReasonBox()" style="padding:8px 16px;border-radius:6px;border:1px solid #c0392b;background:#fff;color:#c0392b;cursor:pointer;font-size:13px;">❌ Claim Disapproved</button>
       <button class="approve-btn" id="approvalReviewApproveBtn" style="padding:8px 16px;font-size:13px;">✅ Approve This Claim</button>
     </div>
   </div>
@@ -912,7 +923,7 @@
       <div class="field"><label>Date of Approval</label><input type="text" id="approvedDate" readonly></div>
     </div>
   </div>
-  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.08.21-18:00</div>
+  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.08.21-18:30</div>
 </div>
 
 <div class="sheet" id="viewerScreen" style="display:none;">
@@ -1876,10 +1887,25 @@ function openApprovalReview(id){
 
   document.getElementById('approvalReviewPdfActions').style.display = 'none';
   document.getElementById('approvalReviewFooterButtons').style.display = 'flex';
+  document.getElementById('approvalReviewDisapproveSection').style.display = 'none';
+  document.getElementById('disapprovalReasonInput').value = '';
+  document.getElementById('disapprovalReasonError').textContent = '';
   if(currentReviewPdfUrl){ URL.revokeObjectURL(currentReviewPdfUrl); currentReviewPdfUrl = null; }
 
   document.getElementById('approvalReviewApproveBtn').onclick = () => approveSubmissionWithPdf(sub.id);
+  document.getElementById('confirmDisapprovalBtn').onclick = () => disapproveSubmission(sub.id);
   document.getElementById('approvalReviewModal').style.display = 'flex';
+}
+function showDisapprovalReasonBox(){
+  document.getElementById('approvalReviewFooterButtons').style.display = 'none';
+  document.getElementById('approvalReviewDisapproveSection').style.display = 'block';
+  document.getElementById('disapprovalReasonInput').focus();
+}
+function cancelDisapproval(){
+  document.getElementById('approvalReviewDisapproveSection').style.display = 'none';
+  document.getElementById('approvalReviewFooterButtons').style.display = 'flex';
+  document.getElementById('disapprovalReasonInput').value = '';
+  document.getElementById('disapprovalReasonError').textContent = '';
 }
 function closeApprovalReviewModal(){
   document.getElementById('approvalReviewModal').style.display = 'none';
@@ -1917,6 +1943,29 @@ async function approveSubmissionWithPdf(id){
   }
 
   notifyEdgeFunction('approved', id);
+  await renderApproverPanel();
+}
+
+async function disapproveSubmission(id){
+  const reasonInput = document.getElementById('disapprovalReasonInput');
+  const reason = reasonInput.value.trim();
+  const errorEl = document.getElementById('disapprovalReasonError');
+  if(!reason){ errorEl.textContent = 'Please enter a reason before confirming.'; return; }
+  if(!confirm('Disapprove this mileage claim? The claimant will be notified.')) return;
+
+  const disapprovedByName = currentProfile?.full_name || currentUser.email;
+  const { error } = await sb.from('mtcf_submissions').update({
+    status: 'disapproved',
+    disapproval_reason: reason,
+    approved_by: currentUser.id,
+    approved_by_name: disapprovedByName,
+    approved_at: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ errorEl.textContent = 'Failed to disapprove: ' + error.message; return; }
+
+  notifyEdgeFunction('disapproved', id);
+  closeApprovalReviewModal();
+  alert('Claim disapproved. The claimant has been notified.');
   await renderApproverPanel();
 }
 
