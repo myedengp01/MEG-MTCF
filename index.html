@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEG-MTCF v2026.09.20:13:30</title>
+<title>MEG-MTCF v2026.09.22-20:00</title>
 <style>
   :root{
     --pink:#f7b8cc;
@@ -647,7 +647,7 @@
   <div class="auth-box" id="authBoxLogin">
     <h2>MEG-FORMS Login</h2>
     <div class="auth-sub">Sign in to access the Mileage Tracking &amp; Claim Form (MTCF)</div>
-    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.09.20:13:30</div>
+    <div class="auth-sub" style="margin-top:-14px;font-size:10.5px;opacity:.7;">MEG-MTCF v2026.09.22-20:00</div>
     <div class="auth-error" id="loginError"></div>
     <input type="email" id="loginEmail" placeholder="Email">
     <div class="pw-wrap">
@@ -923,7 +923,7 @@
       <div class="field"><label>Date of Approval</label><input type="text" id="approvedDate" readonly></div>
     </div>
   </div>
-  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.09.20:13:30</div>
+  <div class="footer-stamp" id="refStamp">Ref: MEG-MTCF v2026.09.22-20:00</div>
 </div>
 
 <div class="sheet" id="viewerScreen" style="display:none;">
@@ -2298,7 +2298,7 @@ window.addEventListener('load', async ()=>{
 });
 </script>
 <script id="meg-forms-v1130-addon">
-/* MEG-MTCF v2026.09.20:13:30 — entity approver scope + 2dp */
+/* MEG-MTCF v2026.09.22-20:00 — entity approver scope + 2dp */
 (function(){
   'use strict';
   const SCOPE_OPTIONS=[['','-- Select scope --'],['myeden','MyEden Group + MyEden Edu Hub Sdn Bhd'],['hds','Happy Dino'],['abn','Aborne Project']];
@@ -2381,7 +2381,7 @@ window.addEventListener('load', async ()=>{
 })();
 </script>
 <script id="meg-forms-v1645-addon">
-/* MEG-MTCF v2026.09.20:13:30
+/* MEG-MTCF v2026.09.22-20:00
    - Browse Approved Claims for Admin / entity-scoped Approvers
    - Payroll / Account View Only: all-department Pending + Approved, read-only
    - Claimant My Claims with admin-settable history window + countdown
@@ -2392,7 +2392,7 @@ window.addEventListener('load', async ()=>{
 (function(){
   'use strict';
 
-  const V1645 = 'MEG-MTCF v2026.09.20:13:30';
+  const V1645 = 'MEG-MTCF v2026.09.22-20:00';
   const FINAL_STATUSES = new Set(['approved','disapproved','paid']);
   let v1645HistoryMonths = 2;
   let v1645ViewerStatus = 'submitted';
@@ -2801,11 +2801,12 @@ window.addEventListener('load', async ()=>{
     const {data,error}=await q;
     if(error){ console.error(error); list.innerHTML='<div class="manage-empty">Failed to load claims.</div>'; return; }
     v1645ViewerCache=data||[];
+    window.__MTCF_APPROVED_VIEWER_CACHE__=v1645ViewerCache;
     if(!v1645ViewerCache.length){
       list.innerHTML=`<div class="manage-empty">No ${v1645ViewerStatus==='submitted'?'pending':'approved'} claims match these filters.</div>`; return;
     }
     list.innerHTML=v1645ViewerCache.map(sub=>`
-      <div class="viewer-claim-row">
+      <div class="viewer-claim-row" data-meg-claim-id="${esc(sub.status==='approved'?sub.id:'')}">
         <div class="viewer-claim-info">
           <div class="name">${esc(sub.claimant_name)} — ${esc(sub.serial_no)} <span class="v1645-badge ${esc(sub.status)}">${esc(sub.status==='submitted'?'Pending Approval':sub.status)}</span></div>
           <div class="meta">${esc(companyName(sub.company_code))} · ${sub.year||''} · ${esc(sub.start_date||'')} – ${esc(sub.end_date||'')} · ${fmt2(sub.total_mileage_km)} KM · RM ${fmt2(sub.total_amount)}</div>
@@ -2862,8 +2863,10 @@ window.addEventListener('load', async ()=>{
       const el=document.getElementById(id); if(el) el.addEventListener(id==='v1645BrowseName'?'input':'change',renderBrowseApproved);
     });
     await renderBrowseApproved();
+    window.MEG_MTCF_INLINE_PAYMENT?.install();
   }
   window.openBrowseApprovedClaimsV1645=openBrowseApproved;
+  window.renderBrowseApprovedV1645=renderBrowseApproved;
 
   async function renderBrowseApproved(){
     const list=document.getElementById('v1645BrowseList'); if(!list) return;
@@ -2879,9 +2882,10 @@ window.addEventListener('load', async ()=>{
     const {data,error}=await q;
     if(error){ console.error(error); list.innerHTML=`<div class="manage-empty">Failed to load approved claims: ${esc(error.message)}</div>`;return; }
     v1645BrowseCache=data||[];
+    window.__MTCF_APPROVED_BROWSE_CACHE__=v1645BrowseCache;
     if(!v1645BrowseCache.length){list.innerHTML='<div class="manage-empty">No approved claims found.</div>';return;}
     list.innerHTML=v1645BrowseCache.map(sub=>`
-      <div class="viewer-claim-row">
+      <div class="viewer-claim-row" data-meg-claim-id="${esc(sub.id)}">
         <div class="viewer-claim-info">
           <div class="name">${esc(sub.claimant_name)} — ${esc(sub.serial_no)}</div>
           <div class="meta">${esc(companyName(sub.company_code))} · ${sub.year||''} · ${fmt2(sub.total_mileage_km)} KM · RM ${fmt2(sub.total_amount)} · Approved ${fmtDate(sub.approved_at)}</div>
@@ -3078,7 +3082,7 @@ window.addEventListener('load', async ()=>{
 </script>
 
 <script id="meg-dashboard-deeplink-hotfix-mtcf">
-/* MEG-FORMS Dashboard deep-link compatibility hotfix v2026.09.20:13:30 */
+/* MEG-FORMS Dashboard deep-link compatibility hotfix v2026.09.22-20:00 */
 (function(){
   'use strict';
   if (window.__MEG_DASH_DEEPLINK_MTCF__) return;
@@ -3174,7 +3178,7 @@ window.addEventListener('load', async ()=>{
 
 /* v16:45 — persisted MTCF company/serial identity lock */
 (function(){
-  const RELEASE='v2026.09.20:13:30';
+  const RELEASE='v2026.09.22-20:00';
   function setLocked(locked){
     const sel=document.getElementById('companySelect');
     if(sel){ sel.disabled=!!locked; sel.title=locked?'Company is locked after the first database save.':''; }
@@ -3196,5 +3200,6 @@ window.addEventListener('load', async ()=>{
 })();
 
 </script>
+<script src="./universal-payment-inline.js?v=20260922-2000" defer></script>
 </body>
 </html>
