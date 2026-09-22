@@ -1,0 +1,41 @@
+/* MEG-MTCF inline payment and Admin Delete — v2026.09.22-20:00.
+ * All payment and deletion writes go through server-authorized, audited RPCs.
+ * No separate page or floating payment control; no automatic mutations.
+ */
+(function(root){
+'use strict';
+const FORM='mtcf', UVN='v2026.09.22-20:00';
+const pending=new Set(), observers=[];
+let generation=0,scheduled=false;
+const doc=root.document;
+function db(){try{return typeof sb!=='undefined'?sb:root.sb;}catch{return root.sb;}}
+function date(iso){if(!iso)return '';const d=new Date(iso);return Number.isNaN(d.getTime())?'':d.toLocaleString('en-GB');}
+function eligible(node){return node?.matches?.('#v1645BrowseList .viewer-claim-row, #viewerClaimsList .viewer-claim-row');}
+function rows(){return [...doc.querySelectorAll('#v1645BrowseList .viewer-claim-row, #viewerClaimsList .viewer-claim-row')].filter(node=>node.dataset.megClaimId);}
+function actions(node){return node.querySelector('.v1645-actions');}
+function add(actionsEl,text,color){const tag=doc.createElement('span');tag.className='meg-inline-payment';tag.style.cssText='display:inline-flex;align-items:center;font-size:12px;font-weight:700;margin:3px 4px;white-space:normal;color:'+color;tag.textContent=text;actionsEl.appendChild(tag);return tag;}
+async function refresh(){const client=db(),current=rows();if(!client||!current.length)return;const token=++generation;const refs=current.map(node=>({node,id:node.dataset.megClaimId}));refs.forEach(({node})=>node.querySelectorAll('.meg-inline-payment').forEach(el=>el.remove()));const ids=[...new Set(refs.map(x=>x.id))];
+try{const [status,authority,admin,dates]=await Promise.all([
+client.rpc('meg_forms_claim_status_batch',{p_form_code:FORM,p_submission_ids:ids}),
+client.rpc('meg_forms_user_can_mark_paid',{p_form_code:FORM}),
+client.rpc('meg_forms_user_can_admin_delete',{p_form_code:FORM}),
+client.rpc('meg_forms_payment_dates_batch',{p_form_code:FORM,p_submission_ids:ids})]);
+if(status.error)throw status.error;const canPay=!authority.error&&authority.data===true;const canDelete=!admin.error&&admin.data===true;const byId=new Map((status.data||[]).map(s=>[String(s.submission_id),s]));const byDate=dates.error?new Map():new Map((dates.data||[]).map(s=>[String(s.submission_id),s.payment_done_at]));if(token!==generation)return;
+for(const {node,id} of refs){if(!node.isConnected||node.dataset.megClaimId!==id)continue;const bar=actions(node);if(!bar)continue;const state=byId.get(id);if(!state){add(bar,'Payment status unavailable','#64748b');continue;}
+if(state.claim_paid){const actual=date(byDate.get(id));add(bar,'✓ Claim Paid · '+(actual||'Date unavailable'),'#166534');continue;}
+add(bar,String(state.display_status||'Pending Payment'),'#925e10');
+if(canDelete&&!pending.has('delete:'+id)&&!['completed','disbursed','paid','claim paid'].includes(String(state.workflow_status||'').toLowerCase())){const button=doc.createElement('button');button.type='button';button.className='meg-inline-payment';button.textContent='🗑 Delete';button.style.cssText='border-color:#b91c1c;color:#991b1b;';button.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();void deleteClaim(id,button);});bar.appendChild(button);}
+if(canPay&&state.can_mark_paid===true&&!pending.has('pay:'+id)){const button=doc.createElement('button');button.type='button';button.className='meg-inline-payment';button.textContent='✓ Claim Paid';button.style.cssText='background:#166534;color:#fff;border-color:#166534;';button.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();void markPaid(id,button);});bar.appendChild(button);}
+}
+}catch(error){root.console?.warn?.('MTCF inline status unavailable',error);for(const {node} of refs){const bar=actions(node);if(bar&&node.isConnected)add(bar,'Payment status unavailable','#64748b');}}
+}
+async function reload(){try{if(doc.getElementById('v1645BrowseApprovedModal')?.style.display==='flex'&&typeof root.renderBrowseApprovedV1645==='function')await root.renderBrowseApprovedV1645();if(doc.getElementById('viewerScreen')?.style.display!=='none'&&typeof root.renderViewerClaims==='function')await root.renderViewerClaims();}catch(error){root.console?.warn?.('MTCF list reload failed',error);}schedule();}
+async function markPaid(id,button){const key='pay:'+id;if(pending.has(key))return;if(!root.confirm('Confirm ACTUAL payment for MTCF claim '+id+'? This records Claim Paid in the shared database.'))return;pending.add(key);button.disabled=true;try{const client=db();const [auth,prior]=await Promise.all([client.rpc('meg_forms_user_can_mark_paid',{p_form_code:FORM}),client.rpc('meg_forms_claim_status',{p_form_code:FORM,p_submission_id:id})]);if(auth.error||auth.data!==true)throw new Error('Finance payment authority required.');if(prior.error)throw prior.error;const before=Array.isArray(prior.data)?prior.data[0]:prior.data;if(!before)throw new Error('Claim not visible or unavailable.');if(!before.claim_paid){if(!before.can_mark_paid)throw new Error('Claim is not eligible for payment.');const result=await client.rpc('meg_forms_set_payment_done_strict',{p_form_code:FORM,p_submission_id:id,p_done:true});if(result.error)throw result.error;}
+const result=await client.rpc('meg_forms_claim_status',{p_form_code:FORM,p_submission_id:id});if(result.error)throw result.error;const after=Array.isArray(result.data)?result.data[0]:result.data;if(!after?.claim_paid)throw new Error('Payment could not be verified. Check status before retrying.');root.alert('Claim Paid confirmed.');}catch(error){root.alert('Claim Paid NOT confirmed: '+(error?.message||String(error)));}finally{pending.delete(key);await reload();}}
+async function deleteClaim(id,button){const key='delete:'+id;if(pending.has(key))return;pending.add(key);button.disabled=true;try{const client=db();const auth=await client.rpc('meg_forms_user_can_admin_delete',{p_form_code:FORM});if(auth.error||auth.data!==true)throw new Error('Form Admin authority required.');const status=await client.rpc('meg_forms_claim_status',{p_form_code:FORM,p_submission_id:id});if(status.error)throw status.error;const state=Array.isArray(status.data)?status.data[0]:status.data;if(!state||state.claim_paid||['completed','disbursed','paid','claim paid'].includes(String(state.workflow_status||'').toLowerCase()))throw new Error('Paid or completed claims cannot be deleted.');const reason=root.prompt('Admin Delete MTCF claim '+id+' — enter audit reason (at least 3 characters):');if(reason===null)return;if(reason.trim().length<3)throw new Error('Deletion reason must be at least 3 characters.');if(root.prompt('Permanent deletion. Type DELETE to confirm '+id+'.')!=='DELETE')return;const result=await client.rpc('meg_forms_admin_delete_claim',{p_form_code:FORM,p_submission_id:id,p_reason:reason.trim()});if(result.error)throw result.error;if(!result.data?.deleted)throw new Error('Deletion was not confirmed.');root.alert('Claim deleted. Audit history retained.');}catch(error){root.alert('Admin Delete failed: '+(error?.message||String(error)));}finally{pending.delete(key);await reload();}}
+function schedule(){if(scheduled)return;scheduled=true;root.setTimeout(()=>{scheduled=false;void refresh();},35);}
+function observe(id){const list=doc.getElementById(id);if(!list||list.dataset.megInlineObserved)return;list.dataset.megInlineObserved='true';const observer=new MutationObserver(records=>{if(records.some(record=>[...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1&&(node.matches?.('.viewer-claim-row')||node.querySelector?.('.viewer-claim-row')))))schedule();});observer.observe(list,{childList:true,subtree:true});observers.push(observer);schedule();}
+function install(){observe('viewerClaimsList');observe('v1645BrowseList');const modal=doc.getElementById('v1645BrowseApprovedModal');if(modal&&!modal.dataset.megInlineObserved){modal.dataset.megInlineObserved='true';const obs=new MutationObserver(()=>observe('v1645BrowseList'));obs.observe(modal,{childList:true,subtree:true});observers.push(obs);}root.setTimeout(()=>{observe('v1645BrowseList');schedule();},400);}
+if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',install,{once:true});else install();
+root.MEG_MTCF_INLINE_PAYMENT=Object.freeze({uvn:UVN,refresh,install});
+})(typeof window!=='undefined'?window:globalThis);
