@@ -1,0 +1,60 @@
+name: Release MTCF Inline Claim Paid 20260922-2000
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/release-inline-payment-20260922-2000.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Wire existing approved claim rows, preserve buttons, synchronize UVN
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          old='v2026.09.20:13:30'; new='v2026.09.22-20:00'
+          assert old in s and '</body>' in s and 'universal-payment-inline.js' not in s, 'Unexpected MTCF baseline'
+          target='v1645BrowseCache=data||[];'
+          assert s.count(target)==1
+          s=s.replace(target,target+'\n    window.__MTCF_APPROVED_BROWSE_CACHE__=v1645BrowseCache;',1)
+          target='window.openBrowseApprovedClaimsV1645=openBrowseApproved;'
+          assert s.count(target)==1
+          s=s.replace(target,target+'\n  window.renderBrowseApprovedV1645=renderBrowseApproved;',1)
+          target='    await renderBrowseApproved();\n  }'
+          assert s.count(target)==1
+          s=s.replace(target,'    await renderBrowseApproved();\n    window.MEG_MTCF_INLINE_PAYMENT?.install();\n  }',1)
+          target='v1645ViewerCache=data||[];'
+          assert s.count(target)==1
+          s=s.replace(target,target+'\n    window.__MTCF_APPROVED_VIEWER_CACHE__=v1645ViewerCache;',1)
+          target='v1645ViewerCache.map(sub=>`\n      <div class="viewer-claim-row">'
+          assert s.count(target)==1
+          s=s.replace(target,'v1645ViewerCache.map(sub=>`\n      <div class="viewer-claim-row" data-meg-claim-id="${esc(sub.status===\'approved\'?sub.id:\'\')}">',1)
+          target='v1645BrowseCache.map(sub=>`\n      <div class="viewer-claim-row">'
+          assert s.count(target)==1
+          s=s.replace(target,'v1645BrowseCache.map(sub=>`\n      <div class="viewer-claim-row" data-meg-claim-id="${esc(sub.id)}">',1)
+          s=s.replace(old,new)
+          s=s.replace('</body>','<script src="./universal-payment-inline.js?v=20260922-2000" defer></script>\n</body>',1)
+          assert s.count('data-meg-claim-id=')==2 and s.count('universal-payment-inline.js')==1
+          p.write_text(s,encoding='utf-8')
+          p=Path('universal-payment-inline.js'); js=p.read_text(encoding='utf-8')
+          assert "if(canDelete&&!pending.has('delete:'+id)" in js
+          js=js.replace("if(canDelete&&!pending.has('delete:'+id)","if(canDelete&&state.workflow_status==='approved'&&!pending.has('delete:'+id)",1)
+          js=js.replace("if(canPay&&state.can_mark_paid===true", "if(canPay&&state.workflow_status==='approved'&&state.can_mark_paid===true",1)
+          p.write_text(js,encoding='utf-8')
+          Path('version.json').write_text(json.dumps({'version':new,'uvn':new},indent=2)+'\n',encoding='utf-8')
+          assert json.loads(Path('version.json').read_text())['uvn']==new
+          PY
+          node --check universal-payment-inline.js
+          git diff --check
+          git add index.html universal-payment-inline.js version.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git diff --cached --quiet || (git commit -m 'release(MTCF): inline payment date and Admin Delete v2026.09.22-20:00' && git push origin main)
